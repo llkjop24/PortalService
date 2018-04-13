@@ -1,52 +1,103 @@
 package kr.ac.jejunu;
 
-import java.sql.*;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-public abstract class UserDao {
-    public kr.ac.jejunu.User get(int id) throws SQLException, ClassNotFoundException {
-        //mysql driver load
-        Connection connection = getConnection();
-        //sql 작성하고,
-        PreparedStatement preparedStatement = connection.prepareStatement( "select * from userinfo where id = ?");
-        preparedStatement.setInt(1, id);
-        //sql 실행하고
-        ResultSet resultSet = preparedStatement.executeQuery();
-        //결과를 User 에 매핑하고
-        resultSet.next();
-        kr.ac.jejunu.User user = new kr.ac.jejunu.User();
-        user.setId(resultSet.getInt("id"));
-        user.setName(resultSet.getString("name"));
-        user.setPassword(resultSet.getString("password"));
-        //자원을 해지하고
-        resultSet.close();
-        preparedStatement.close();
-        connection.close();
-        //결과를 리턴한다.
+public class UserDao {
+    private final DataSource dataSource;
+
+    public UserDao(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public User get(int id) throws ClassNotFoundException, SQLException {
+
+        Connection connection = null;
+        ResultSet resultSet = null;
+        PreparedStatement preparedStatement = null;
+        User user;
+
+
+        try{
+            connection = dataSource.getConnection();
+            preparedStatement = connection.prepareStatement("select * from userinfo where id = ?");
+            preparedStatement.setInt(1, id);
+            resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            user = new User();
+            user.setId(resultSet.getInt("id"));
+            user.setName(resultSet.getString("name"));
+            user.setPassword(resultSet.getString("password"));
+        } finally {
+            if(resultSet != null)
+                try{
+                resultSet.close();
+                }catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                if(preparedStatement != null){
+                   try{
+                       resultSet.close();
+                   }catch(SQLException e){
+                       e.printStackTrace();
+                    }
+                }
+                if(connection != null){
+                try{
+                    connection.close();
+                    }catch(SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
         return user;
     }
 
-    public Integer insert(User user) throws ClassNotFoundException, SQLException {
-        Connection connection = getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement( "insert into userinfo(name, password) values(?,?) ");
-        preparedStatement.setString(1, user.getName());
-        preparedStatement.setString(2, user.getPassword());
+    public Integer insert(User user) throws SQLException, ClassNotFoundException {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        Integer id;
 
-        preparedStatement.executeUpdate();
+        try {
+            connection = dataSource.getConnection();
+            preparedStatement = connection.prepareStatement(
+                    "insert into userinfo(name, password) values (?, ?)");
+            preparedStatement.setString(1, user.getName());
+            preparedStatement.setString(2, user.getPassword());
 
-        preparedStatement = connection.prepareStatement("select last_insert_id()");
-        ResultSet resultSet = preparedStatement.executeQuery();
-        resultSet.next();
+            preparedStatement.executeUpdate();
 
-       Integer id = resultSet.getInt(1);
-        resultSet.close();
-        preparedStatement.close();
-        connection.close();
+            preparedStatement = connection.prepareStatement("select last_insert_id()");
+            resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+
+            id = resultSet.getInt(1);
+
+        } finally {
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                preparedStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
         return id;
     }
-
-    abstract Connection getConnection() throws ClassNotFoundException, SQLException;
-//    {
-//        Class.forName("com.mysql.jdbc.Driver");
-//        return DriverManager.getConnection("jdbc:mysql://localhost/jeju?CharacterEncoding=utf-8", "root", "qw1915qw");
-//    }
 }
