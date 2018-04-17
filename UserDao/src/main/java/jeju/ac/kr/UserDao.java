@@ -4,16 +4,13 @@ import java.sql.*;
 
 public class UserDao{
 
-    private final ConnectionMaker connectionMaker = new JejuConnectionMaker();
+    private final ConnectionMaker connectionMaker;
+
+    public UserDao(ConnectionMaker connectionMaker){
+        this.connectionMaker = connectionMaker;
+    }
 
     public User get(int id) throws ClassNotFoundException, SQLException {
-        //mysql 드라이버 읽고
-        //Connection 맺고
-        //sql작성하고
-        //sql 실행하고
-        //결과를 User에 매핑하고
-        //자원을 해지하고
-        //결과를 리턴한다.
         Connection connection = connectionMaker.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement("select * from userinfo where id = ?");
         preparedStatement.setInt(1, id);

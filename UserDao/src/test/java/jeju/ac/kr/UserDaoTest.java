@@ -11,11 +11,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class UserDaoTest {
 
     private UserDao userDao;
+    private DaoFactory daoFactory;
 //    private UserDao hallaUserDao;
 
     @Before
     public void setup(){
-        userDao = new UserDao();
+        daoFactory = new DaoFactory();
+        userDao = daoFactory.getUserDao();
     }
 
     @Test
