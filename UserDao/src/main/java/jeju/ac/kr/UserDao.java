@@ -4,7 +4,7 @@ import java.sql.*;
 
 public class UserDao{
 
-    private final ConnectionMaker connectionMaker = new JejuConnecionMaker();
+    private final ConnectionMaker connectionMaker = new JejuConnectionMaker();
 
     public User get(int id) throws ClassNotFoundException, SQLException {
         //mysql 드라이버 읽고
