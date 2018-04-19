@@ -13,9 +13,8 @@ public class UserDao{
     public User get(int id) throws  SQLException {
         String sql = "select * from userinfo where id = ?";
         Object[] params = new Object[]{id};
-        StatementStrategy statementStrategy = jdbcContext.queryForObject(sql, params);
 
-        return jdbcContext.jdbcContextForGet(statementStrategy);
+        return jdbcContext.queryForObject(sql, params);
     }
 
     public Integer insert(User user) throws  SQLException {
